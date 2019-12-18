@@ -1,10 +1,10 @@
 clear all; close all; clc;
 
-particle_no = 10;
+particle_no = 100;
 
 initial_position = [2 -1 0]; % x z y
-initial_speed = [-0.1 -0.15 +0]; % vx vy vz %units of c
-mag_v = norm(initial_speed);
+initial_speed = [0.1 0.15 +0]; % vx vy vz %units of c
+mag_iv = norm(initial_speed);
 
 q=1.60217*10^(-19); %charge
 m=1.67262*10^(-27); % mass
@@ -12,14 +12,14 @@ c = 3*10^8; % speed of light
 g = 9.81; 
 a = 1.5; %radius of each coil
 b = 0.8; %radius of central region
-t_final = 0.25e-4; %duration of sim.
-dt = 1.0e-10; %step size
+t_final = 1e-5; %duration of sim.
+dt = 1.0e-9; %step size
 
 %iniitial energy
-gamma_i = 1/(sqrt(1-(mag_v)^2));
+gamma_i = 1/(sqrt(1-(mag_iv)^2));
 ei = m*c^2*(gamma_i - 1) * 6.242e+18;
 
-disp(['Speed = ', num2str(mag_v*100) , '% speed of light'])
+disp(['Speed = ', num2str(mag_iv*100) , '% speed of light'])
 disp(['Energy = ', num2str(ei/10^6), ' MeV'])  
 
 angle_iter = linspace(0,360,particle_no)*pi/180;
@@ -36,7 +36,7 @@ end
 %time steps
 t = (0:dt:t_final);
 
-figure(1)
+h = figure(1);
 plot3(xp,yp,zp,'.b');
 xlim([-4 4])
 ylim([-4 4])
@@ -82,7 +82,7 @@ for i = 0:t_final/dt
         vy = vyp(j);
         vz = vzp(j);
         
-        gamma = 1/sqrt(1-(vx^2+vy^2+vz^2)/c^2);
+        
         count = countp(j);
         
         phi =  atan2(y,x);
@@ -109,12 +109,12 @@ for i = 0:t_final/dt
             end
         end
                 
-        Eax = E_force(1)/(gamma*m);
-        Eay = E_force(2)/(gamma*m);
-        Eaz = E_force(3)/(gamma*m);
+        Eax = E_force(1)/(m);
+        Eay = E_force(2)/(m);
+        Eaz = E_force(3)/(m);
         
         % q/(gamma*m) factor
-        qm = q/(gamma*m);     
+        qm = q/(m);     
         
         %Total acceleration
         ax = qm*(vy*Bz-vz*By) + Eax;
@@ -138,7 +138,7 @@ for i = 0:t_final/dt
         countp(j) = count+1;        
     
         %plots every 60 points
-        if mod(countp(j),60)==0
+        if mod(countp(j),2000)==0
             plot3(xp(j),yp(j),zp(j),'.b', 'linewidth',1000);
             fa = [ax ay az];
             n = norm(fa);
@@ -146,10 +146,23 @@ for i = 0:t_final/dt
             po = [xp(j), yp(j), zp(j)];
                         
         end
-        pause(0.00000000000000000000000000001)       
+        
+           %updates the plot every 180 points
+        if mod(count,2000)==0
+            drawnow
+            Frame(counter) = getframe(h);
+            counter = counter + 1;
+
+        end
+            
         
     end
-
+   
 end
+
+video = VideoWriter('toroid_sim_100_particle.avi');
+open(video)
+writeVideo(video,Frame)
+close(video)
 toc
 

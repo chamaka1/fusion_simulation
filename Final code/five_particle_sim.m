@@ -4,7 +4,7 @@ particle_no = 5;
 ds = 0.3;
 
 initial_position = [2 -1 0]; % x z y
-initial_speed = [-0.1 -0.15 +0]; % vx vy vz %units of c
+initial_speed = [0.1 0.15 +0]; % vx vy vz %units of c
 mag_iv = norm(initial_speed);%mag initial speed 
 
 q=1.60217*10^(-19); %charge
@@ -80,7 +80,7 @@ for i = 0:t_final/dt
         vy = vyp(j);
         vz = vzp(j);
         
-        gamma = 1/sqrt(1-(vx^2+vy^2+vz^2)/c^2);
+        
         count = countp(j);
         
         phi =  atan2(y,x);
@@ -91,7 +91,10 @@ for i = 0:t_final/dt
         end
     
         [Bx, By, Bz] = toroidv2([x y z a b]);  %magnetic field strength calc.
-   
+        bf = 1; %magnetic scaling factor
+        Bx = Bx*bf;
+        By = By*bf;
+        Bz = Bz*bf;
         % include force of electric field from other particles
         e0 = 8.8541878128 * 10^-12;
         e0f = 1/(4*pi*e0);
@@ -107,12 +110,12 @@ for i = 0:t_final/dt
             end
         end
                 
-        Eax = E_force(1)/(gamma*m);
-        Eay = E_force(2)/(gamma*m);
-        Eaz = E_force(3)/(gamma*m);
+        Eax = E_force(1)/(m);
+        Eay = E_force(2)/(m);
+        Eaz = E_force(3)/(m);
         
         % q/(gamma*m) factor
-        qm = q/(gamma*m);     
+        qm = q/(m);     
         
         %Total acceleration
         ax = qm*(vy*Bz-vz*By) + Eax;
